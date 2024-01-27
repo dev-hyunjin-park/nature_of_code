@@ -1,4 +1,4 @@
-// 중력과 바람
+// 질량과 가속도
 
 let moverA;
 let moverB;
