@@ -26,7 +26,7 @@ function draw() {
   angleV += angleA;
   angle += angleV;
 
-  angleV *= 0.99; // damping 추가. 매 프레임마다 속도를 1%씩 줄인다 --> 서서히 느려지다가 멈춤
+  // angleV *= 0.99; // damping 추가. 매 프레임마다 속도를 1%씩 줄인다 --> 서서히 느려지다가 멈춤
 
   bob.x = len * sin(angle) + origin.x;
   bob.y = len * cos(angle) + origin.y;
