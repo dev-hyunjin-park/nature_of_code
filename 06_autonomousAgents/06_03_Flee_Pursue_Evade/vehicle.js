@@ -3,9 +3,20 @@ class Vehicle {
     this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
-    this.maxSpeed = 15;
+    this.maxSpeed = 5;
     this.maxForce = 1;
     this.r = 16;
+  }
+
+  pursue(vehicle) {
+    let target = vehicle.pos.copy();
+    let prediction = vehicle.vel.copy();
+    prediction.mult(10);
+    target.add(prediction);
+
+    fill(0, 255, 0);
+    circle(target.x, target.y, this.r * 2);
+    return this.seek(target);
   }
 
   flee(target) {
@@ -43,5 +54,18 @@ class Vehicle {
     rotate(this.vel.heading()); // 속도 벡터와 관련된 각도만큼 회전시킨다
     triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
     pop();
+  }
+
+  edges() {
+    if (this.pos.x > width + this.r) {
+      this.pos.x = -this.r;
+    } else if (this.pos.x < -this.r) {
+      this.pos.x = width + this.r;
+    }
+    if (this.pos.y > height + this.r) {
+      this.pos.y = -this.r;
+    } else if (this.pos.y < -this.r) {
+      this.pos.y = height + this.r;
+    }
   }
 }

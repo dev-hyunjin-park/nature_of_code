@@ -1,23 +1,22 @@
-let vehicle;
+let pursuer;
 let target;
 
 function setup() {
   createCanvas(400, 400);
-  vehicle = new Vehicle(100, 100);
+  pursuer = new Vehicle(100, 100);
+  target = new Target(200, 100);
 }
 
 function draw() {
   background(0);
 
-  target = createVector(mouseX, mouseY);
-  fill(255, 0, 0);
-  noStroke();
-  circle(target.x, target.y, 32);
+  let steering = pursuer.pursue(target);
+  pursuer.applyForce(steering);
 
-  let steering = vehicle.flee(target);
-  vehicle.applyForce(steering);
+  pursuer.update();
+  pursuer.show();
 
-  vehicle.seek(target);
-  vehicle.show();
-  vehicle.update();
+  target.update();
+  target.show();
+  target.edges();
 }
