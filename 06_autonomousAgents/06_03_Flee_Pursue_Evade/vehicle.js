@@ -3,9 +3,14 @@ class Vehicle {
     this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
-    this.maxSpeed = 5;
+    this.maxSpeed = 10;
     this.maxForce = 1;
     this.r = 16;
+  }
+
+  evade(vehicle) {
+    let pursuit = this.pursue(vehicle);
+    return pursuit.mult(-1);
   }
 
   pursue(vehicle) {
@@ -13,9 +18,6 @@ class Vehicle {
     let prediction = vehicle.vel.copy();
     prediction.mult(10);
     target.add(prediction);
-
-    fill(0, 255, 0);
-    circle(target.x, target.y, this.r * 2);
     return this.seek(target);
   }
 

@@ -1,7 +1,8 @@
 class Target extends Vehicle {
   constructor(x, y) {
     super(x, y);
-    this.vel = createVector(5, 2);
+    this.vel = p5.Vector.random2D();
+    this.vel.mult(5);
   }
 
   show() {
