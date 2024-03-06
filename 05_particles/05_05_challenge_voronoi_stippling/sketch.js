@@ -1,43 +1,28 @@
-let seedPoints = [];
-let delaunay;
+let points = [];
+let delaunay, voronoi;
 
 function setup() {
-  createCanvas(400, 400);
-  for (let i = 0; i < 100; i++) {
-    seedPoints[i] = createVector(random(width), random(height));
+  createCanvas(600, 600);
+  for (let i = 0; i < 10000; i++) {
+    points[i] = createVector(random(width), random(height));
   }
-  delaunay = calculateDelaunay(seedPoints);
+  delaunay = calculateDelaunay(points);
+  voronoi = delaunay.voronoi([0, 0, width, height]);
+  // noLoop();
 }
 
 function draw() {
   background(255);
-  for (let v of seedPoints) {
+  for (let v of points) {
     stroke(0);
     strokeWeight(4);
     point(v.x, v.y);
   }
 
-  // noFill();
-  // strokeWeight(1);
-  // let { points, triangles } = delaunay;
-  // // 점끼리 삼각형으로 연결해준다
-  // for (let i = 0; i < delaunay.triangles.length; i += 3) {
-  //   let a = 2 * delaunay.triangles[i];
-  //   let b = 2 * delaunay.triangles[i + 1];
-  //   let c = 2 * delaunay.triangles[i + 2];
-  //   triangle(
-  //     points[a],
-  //     points[a + 1],
-  //     points[b],
-  //     points[b + 1],
-  //     points[c],
-  //     points[c + 1]
-  //   );
-  // }
-
-  let voronoi = delaunay.voronoi([0, 0, width, height]);
   let polygons = voronoi.cellPolygons();
-  for (let poly of polygons) {
+  let cells = Array.from(polygons);
+
+  for (let poly of cells) {
     stroke(0);
     strokeWeight(1);
     noFill();
@@ -47,6 +32,30 @@ function draw() {
     }
     endShape();
   }
+
+  let centroids = [];
+  for (let poly of cells) {
+    let area = 0;
+    let centroid = createVector(0, 0);
+    for (let i = 0; i < poly.length; i++) {
+      let v0 = poly[i];
+      let v1 = poly[(i + 1) % poly.length];
+      let crossValue = v0[0] * v1[1] - v1[0] * v0[1];
+      area += crossValue;
+      centroid.x += (v0[0] + v1[0]) * crossValue;
+      centroid.y += (v0[1] + v1[1]) * crossValue;
+    }
+    area /= 2;
+    centroid.div(6 * area);
+    centroids.push(centroid);
+  }
+
+  for (let i = 0; i < points.length; i++) {
+    points[i].lerp(centroids[i], 0.1);
+  }
+
+  delaunay = calculateDelaunay(points);
+  voronoi = delaunay.voronoi([0, 0, width, height]);
 }
 
 function calculateDelaunay(points) {
@@ -55,6 +64,5 @@ function calculateDelaunay(points) {
     pointsArray.push(v.x, v.y);
     // 모든 점 배열을 가져와서 x, y가 포함된 단일 배열로 변환
   }
-  console.log(pointsArray);
   return new d3.Delaunay(pointsArray);
 }
