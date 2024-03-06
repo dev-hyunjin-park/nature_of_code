@@ -1,4 +1,9 @@
+// Coding Train / Daniel Shiffman
+// Weighted Voronoi Stippling
+// https://thecodingtrain.com/challenges/181-image-stippling
+
 let points = [];
+
 let delaunay, voronoi;
 
 let potato;
@@ -9,36 +14,78 @@ function preload() {
 
 function setup() {
   createCanvas(potato.width, potato.height);
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 1000; i++) {
     let x = random(width);
     let y = random(height);
     let col = potato.get(x, y);
-    if (random(70) > brightness(col)) {
+    if (random(100) > brightness(col)) {
       points.push(createVector(x, y));
     } else {
       i--;
     }
   }
+
   delaunay = calculateDelaunay(points);
   voronoi = delaunay.voronoi([0, 0, width, height]);
-  // noLoop();
+  //noLoop();
 }
 
 function draw() {
   background(255);
-  for (let v of points) {
-    stroke(0);
-    strokeWeight(4);
-    point(v.x, v.y);
-  }
 
   let polygons = voronoi.cellPolygons();
   let cells = Array.from(polygons);
 
-  // for (let poly of cells) {
+  let centroids = new Array(cells.length);
+  let weights = new Array(cells.length).fill(0);
+  let counts = new Array(cells.length).fill(0);
+  let avgWeights = new Array(cells.length).fill(0);
+  for (let i = 0; i < centroids.length; i++) {
+    centroids[i] = createVector(0, 0);
+  }
+
+  potato.loadPixels();
+  let delaunayIndex = 0;
+  for (let i = 0; i < width; i++) {
+    for (let j = 0; j < height; j++) {
+      let index = (i + j * width) * 4;
+      let r = potato.pixels[index + 0];
+      let g = potato.pixels[index + 1];
+      let b = potato.pixels[index + 2];
+      let bright = (r + g + b) / 3;
+      let weight = 1 - bright / 255;
+      delaunayIndex = delaunay.find(i, j, delaunayIndex);
+      centroids[delaunayIndex].x += i * weight;
+      centroids[delaunayIndex].y += j * weight;
+      weights[delaunayIndex] += weight;
+      counts[delaunayIndex]++;
+    }
+  }
+
+  let maxWeight = 0;
+  for (let i = 0; i < centroids.length; i++) {
+    if (weights[i] > 0) {
+      centroids[i].div(weights[i]);
+      avgWeights[i] = weights[i] / (counts[i] || 1);
+      if (avgWeights[i] > maxWeight) {
+        maxWeight = avgWeights[i];
+      }
+    } else {
+      centroids[i] = points[i].copy();
+    }
+  }
+
+  for (let i = 0; i < points.length; i++) {
+    points[i].lerp(centroids[i], 0.5);
+  }
+
+  // for (let i = 0; i < cells.length; i++) {
+  //   let poly = cells[i];
+  //   let centroid = centroids[i];
+  //   let col =potato.get(centroid.x, centroid.y)
   //   stroke(0);
-  //   strokeWeight(1);
-  //   noFill();
+  //   strokeWeight(0.5);
+  //   fill(col);
   //   beginShape();
   //   for (let i = 0; i < poly.length; i++) {
   //     vertex(poly[i][0], poly[i][1]);
@@ -46,25 +93,15 @@ function draw() {
   //   endShape();
   // }
 
-  let centroids = [];
-  for (let poly of cells) {
-    let area = 0;
-    let centroid = createVector(0, 0);
-    for (let i = 0; i < poly.length; i++) {
-      let v0 = poly[i];
-      let v1 = poly[(i + 1) % poly.length];
-      let crossValue = v0[0] * v1[1] - v1[0] * v0[1];
-      area += crossValue;
-      centroid.x += (v0[0] + v1[0]) * crossValue;
-      centroid.y += (v0[1] + v1[1]) * crossValue;
-    }
-    area /= 2;
-    centroid.div(6 * area);
-    centroids.push(centroid);
-  }
-
   for (let i = 0; i < points.length; i++) {
-    points[i].lerp(centroids[i], 0.1);
+    let v = points[i];
+    let col = potato.get(v.x, v.y);
+    stroke(col);
+    //stroke(0);
+    let sw = map(avgWeights[i], 0, maxWeight, 1, 14, true);
+    //sw = 4;
+    strokeWeight(sw);
+    point(v.x, v.y);
   }
 
   delaunay = calculateDelaunay(points);
@@ -75,7 +112,6 @@ function calculateDelaunay(points) {
   let pointsArray = [];
   for (let v of points) {
     pointsArray.push(v.x, v.y);
-    // 모든 점 배열을 가져와서 x, y가 포함된 단일 배열로 변환
   }
   return new d3.Delaunay(pointsArray);
 }
