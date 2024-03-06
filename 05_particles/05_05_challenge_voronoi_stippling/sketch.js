@@ -1,10 +1,23 @@
 let points = [];
 let delaunay, voronoi;
 
+let potato;
+
+function preload() {
+  potato = loadImage("potato.jpeg");
+}
+
 function setup() {
-  createCanvas(600, 600);
+  createCanvas(potato.width, potato.height);
   for (let i = 0; i < 10000; i++) {
-    points[i] = createVector(random(width), random(height));
+    let x = random(width);
+    let y = random(height);
+    let col = potato.get(x, y);
+    if (random(70) > brightness(col)) {
+      points.push(createVector(x, y));
+    } else {
+      i--;
+    }
   }
   delaunay = calculateDelaunay(points);
   voronoi = delaunay.voronoi([0, 0, width, height]);
@@ -22,16 +35,16 @@ function draw() {
   let polygons = voronoi.cellPolygons();
   let cells = Array.from(polygons);
 
-  for (let poly of cells) {
-    stroke(0);
-    strokeWeight(1);
-    noFill();
-    beginShape();
-    for (let i = 0; i < poly.length; i++) {
-      vertex(poly[i][0], poly[i][1]);
-    }
-    endShape();
-  }
+  // for (let poly of cells) {
+  //   stroke(0);
+  //   strokeWeight(1);
+  //   noFill();
+  //   beginShape();
+  //   for (let i = 0; i < poly.length; i++) {
+  //     vertex(poly[i][0], poly[i][1]);
+  //   }
+  //   endShape();
+  // }
 
   let centroids = [];
   for (let poly of cells) {
