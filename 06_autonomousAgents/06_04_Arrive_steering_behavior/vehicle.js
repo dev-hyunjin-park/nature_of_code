@@ -22,32 +22,29 @@ class Vehicle {
   }
 
   arrive(target) {
-    // seek 메소드를 재사용 가능!
-    let force = p5.Vector.sub(target, this.pos);
-    // 임계점
-    let slowRadius = 100;
-    let distance = force.mag(); // target <-> vehicle distance
-    if (distance < slowRadius) {
-      // distance가 0 ~ r(임계점 반지름)일 때 -> 0 ~ maxSpeed로 매핑한다
-      let desireSpeed = map(distance, 0, slowRadius, 0, this.maxSpeed);
-      force.setMag(desireSpeed);
-    } else {
-      force.setMag(this.maxSpeed);
-    }
-    force.sub(this.vel);
-    force.limit(this.maxForce);
-    return force;
+    // 2nd argument true enables the arrival behavior
+    return this.seek(target, true);
   }
 
   flee(target) {
     return this.seek(target).mult(-1);
   }
 
-  seek(target) {
+  seek(target, arrival = false) {
     // vehicle과 target 사이의 거리를 벡터로 계산
     let force = p5.Vector.sub(target, this.pos);
-    // force (desired) 벡터의 크기를 maxSpeed 값으로 제한한다
-    force.setMag(this.maxSpeed);
+    let desireSpeed = this.maxSpeed;
+
+    if (arrival) {
+      // 임계점
+      let slowRadius = 100;
+      let distance = force.mag(); // target <-> vehicle distance
+      if (distance < slowRadius) {
+        // distance가 0 ~ r(임계점 반지름)일 때 -> 0 ~ maxSpeed로 매핑한다
+        desireSpeed = map(distance, 0, slowRadius, 0, this.maxSpeed);
+      }
+    }
+    force.setMag(desireSpeed);
     force.sub(this.vel);
     // 벡터의 크기를 매개변수 max의 값으로 제한한다
     force.limit(this.maxForce);
