@@ -74,10 +74,7 @@ class Vehicle {
     circle(target.x, target.y, 30);
 
     // 타겟을 향해 차량을 움직인다
-    let dist = p5.Vector.dist(future, target);
-    // if (dist > path.radius) {
     return this.seek(target);
-    // }
   }
 
   wander() {

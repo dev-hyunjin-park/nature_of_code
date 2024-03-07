@@ -8,7 +8,7 @@ function setup() {
   path.addPoint(100, height / 2 + 100);
   path.addPoint(300, height / 2);
   path.addPoint(width - 20, height / 2);
-  vehicle = new Vehicle(100, 100);
+  vehicle = new Vehicle(300, 300);
 
   vehicle.vel.x = 2;
 }
