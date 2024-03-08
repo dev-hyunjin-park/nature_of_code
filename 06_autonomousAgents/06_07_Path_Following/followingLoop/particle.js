@@ -1,6 +1,6 @@
 // to do : refactoring
-// 1.일관된 방향성
-// 2. path의 둘레 안에서 edges();
+// [x] 일관된 방향성
+// [ ] path radius에 닿았을 때 edges()
 
 function findProjection(pos, a, b) {
   // 점 a와 pos 사이의 벡터
@@ -19,7 +19,7 @@ class Particle {
   constructor() {
     this.position = createVector(random(width), random(height));
     this.velocity = createVector(0, 0);
-    this.acceleration = createVector(random(2), random(2));
+    this.acceleration = createVector(0, 0);
     this.maxSpeed = 2;
     this.maxForce = 0.1;
     this.radius = 10;
@@ -37,10 +37,15 @@ class Particle {
     const points = path.points;
     let targetPos = createVector(0, 0);
     let worldRecord = 100000;
+    let direction;
 
     for (let i = 0; i < points.length; i++) {
       let startPoint = points[i];
       let endPoint = points[i + 1];
+      if (!endPoint) {
+        endPoint = points[0];
+      }
+
       if (i == 0) {
         fill(255, 0, 0);
       } else if (i == 1) {
@@ -50,11 +55,11 @@ class Particle {
       } else if (i == 3) {
         fill(0);
       } else if (i == 4) {
-        endPoint = points[0];
         fill(100, 100, 0);
       }
       let normalPoint = findProjection(startPoint, predictPos, endPoint);
-      let direction = p5.Vector.sub(startPoint, endPoint);
+      direction = p5.Vector.sub(endPoint, startPoint).normalize(); // 음수 벡터의 방향을 유지하면서 길이를 1로 조정한 것입니다.;
+      direction.mult(2);
       // 법선 점이 path 바깥에 그려진다면 일단 endPoint로 고정시킨다
       if (
         normalPoint.x < min(startPoint.x, endPoint.x) ||
@@ -65,31 +70,22 @@ class Particle {
         normalPoint = endPoint.copy();
       }
 
-      // predictPos가 endPoint에 가까워지면 (dist)
+      // predictPos가 endPoint에 도달하면 다음 segment의 start, end point로 타겟을 바꾼다
       const newStartPoint = points[(i + 1) % points.length];
       const newEndPoint = points[(i + 2) % points.length];
-      const distance = p5.Vector.dist(newEndPoint, predictPos);
+      const distance = p5.Vector.dist(endPoint, predictPos);
       if (distance < path.radius) {
-        direction = p5.Vector.sub(endPoint, newStartPoint);
-      }
-      // 법선점과 파티클이 같은 선 상에 있을 때, 더이상 path를 따라 이동하지 못하고 정체됨
-      // 같은 선상에 오면, 법선점의 위치를 direction 방향으로 이동시킨다?
-      const d = p5.Vector.dist(this.position, normalPoint);
-      if (d < this.radius) {
-        normalPoint.add(direction);
+        normalPoint = findProjection(newStartPoint, predictPos, newEndPoint);
       }
 
       // 모든 법선점 시각화
-      //   ellipse(normalPoint.x, normalPoint.y, 10);
+      ellipse(normalPoint.x, normalPoint.y, 10);
 
       // 2. 가장 가까운 법선점을 찾아서 target에 저장한다
-      direction.normalize();
-      this.acceleration.mult(direction);
-
-      const dist = p5.Vector.dist(predictPos, normalPoint);
-      if (worldRecord > dist) {
-        worldRecord = dist;
-        targetPos = normalPoint;
+      const shortest = p5.Vector.dist(predictPos, normalPoint);
+      if (worldRecord > shortest) {
+        worldRecord = shortest;
+        targetPos = p5.Vector.add(normalPoint, direction);
       }
     }
     // 타겟 위치 시각화
@@ -97,6 +93,7 @@ class Particle {
     // stroke(200, 200, 0);
     // strokeWeight(3);
     // ellipse(targetPos.x, targetPos.y, 30);
+
     // 타겟의 위치를 향해 이동한다
     return this.seek(targetPos);
   }
@@ -120,7 +117,7 @@ class Particle {
     this.velocity.add(this.acceleration);
     this.velocity.limit(this.maxSpeed);
     this.position.add(this.velocity);
-    this.acceleration.set(random(2), random(2));
+    this.acceleration.set(0, 0);
   }
 
   show() {

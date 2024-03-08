@@ -5,7 +5,7 @@ function setup() {
   createCanvas(500, 500);
   newPath();
 
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 500; i++) {
     let particle = new Particle(path);
     particles.push(particle);
   }
