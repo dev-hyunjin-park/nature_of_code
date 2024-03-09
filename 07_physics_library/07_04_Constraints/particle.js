@@ -31,6 +31,7 @@ function Particle(x, y, r, fixed) {
     stroke(255);
     fill(126);
     ellipse(0, 0, this.r * 2);
+    line(0, 0, this.r, 0);
     pop();
   };
 }

@@ -3,7 +3,10 @@ var Engine = Matter.Engine, // 물리 시뮬레이션을 관리
   Runner = Matter.Runner, // 물리 시뮬레이션 실행, 주기 제어
   Bodies = Matter.Bodies, // 물리 객체 생성
   Composite = Matter.Composite; // 물리 객체 그룹화, 관리
-var Constraint = Matter.Constraint;
+
+var Constraint = Matter.Constraint,
+  Mouse = Matter.Mouse,
+  MouseConstraint = Matter.MouseConstraint;
 
 // create an engine
 var engine = Engine.create();
@@ -18,10 +21,13 @@ var particles = [];
 var boundaries = [];
 var boundary;
 
+var mConstraint;
+
 function setup() {
-  createCanvas(400, 400);
+  var canvas = createCanvas(400, 400);
   engine = Engine.create();
   world = engine.world;
+
   Runner.run(runner, engine);
 
   var prev = null;
@@ -31,7 +37,7 @@ function setup() {
       fixed = true;
     }
 
-    var p = new Particle(x, 100, 5, fixed);
+    var p = new Particle(x, 100, 10, fixed);
     particles.push(p);
 
     if (prev) {
@@ -49,6 +55,15 @@ function setup() {
 
   boundary = new Boundary(200, height - 20, width, 20, 0);
   boundaries.push(boundary);
+
+  var canvasmouse = Mouse.create(canvas.elt);
+  canvasmouse.pixelRatio = pixelDensity();
+  var options = {
+    mouse: canvasmouse,
+  };
+
+  mConstraint = MouseConstraint.create(engine, options);
+  Composite.add(world, mConstraint);
 }
 
 function draw() {
@@ -59,6 +74,15 @@ function draw() {
   }
   for (var i = 0; i < particles.length; i++) {
     particles[i].show();
+  }
+
+  if (mConstraint.body) {
+    var pos = mConstraint.body.position;
+    var offset = mConstraint.constraint.pointB;
+    var m = mConstraint.mouse.position;
+
+    stroke(0, 255, 0);
+    line(pos.x + offset.x, pos.y + offset.y, m.x, m.y);
   }
   // line(
   //   particles[0].body.position.x,
