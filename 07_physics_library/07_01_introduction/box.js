@@ -8,6 +8,16 @@ function Circle(x, y, r) {
 
   Composite.add(engine.world, this.body);
 
+  this.isOffScreen = function () {
+    var pos = this.body.position;
+    return pos.y > height + 100;
+  };
+
+  this.removeFromWorld = function () {
+    Composite.remove(engine.world, this.body);
+    // Composite.remove 함수는 단순히 그룹에서 객체를 제거하는 것이지, 실제로 물리 세계에서 해당 객체를 제거하는 것은 아님
+  };
+
   this.show = function () {
     var pos = this.body.position;
     var angle = this.body.angle;
